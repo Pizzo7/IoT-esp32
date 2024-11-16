@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Control</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.0.0/mqtt.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+        }
+        .button {
+            display: block;
+            width: 200px;
+            padding: 10px;
+            margin: 10px auto;
+            background-color: #090909;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #de1717;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Control ESP32</h1>
+    <div class="container">
+        <button class="button" onclick="sendCommand('led_on')">Turn LED ON</button>
+        <button class="button" onclick="sendCommand('led_off')">Turn LED OFF</button>
+        <button class="button" onclick="sendCommand('buzzer')">Beep Buzzer</button>
+        <button class="button" id="controlButton">Trigger All Actions</button>
+    </div>
+
+    <script>
+        const client = mqtt.connect('ws://test.mosquitto.org:8080'); // WebSocket connection
+
+        client.on('connect', function () {
+            console.log('Connected to MQTT broker');
+        });
+
+        function sendCommand(command) {
+            client.publish('esp32/control', command);
+            console.log('Command sent:', command);
+        }
+
+        document.getElementById("controlButton").addEventListener("click", function() {
+            // Sequence of actions
+            sendCommand('led_on'); // Turn on LED
+            setTimeout(() => {
+                sendCommand('buzzer'); // Beep Buzzer
+                setTimeout(() => {
+                    sendCommand('led_off'); // Turn off LED after 2 seconds
+                }, 1000);  // Wait for 1 second after the buzzer
+            }, 1000);  // Wait for 1 second before triggering the buzzer
+        });
+    </script>
+</body>
+</html>

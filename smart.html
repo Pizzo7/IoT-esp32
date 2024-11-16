@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.0.0/mqtt.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+            text-transform: uppercase;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #09090918;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <h1>Total Transactions</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Registrants</th>
+                <th>Ticket ID</th>
+                <th>Amount(GHS)</th>
+                <th>Transaction Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Ngupe Ewang Thierry</td>
+                <td id="room1">772660</td>
+                <td id="cost1">9,856.15</td> GHS</td>
+                <td id="cost1">Proccessing</td>
+            </tr>
+            <tr>
+                <td>Akem</td>
+                <td id="room1">445689</td>
+                <td id="cost1">12,243.19 GHS</td>
+                <td id="cost1">Unproccessed</td>
+            </tr>
+            <tr>
+                <td>James Kumah</td>
+                <td id="room1">990146</td>
+                <td id="cost1">53,901.67 GHS</td>
+                <td id="cost1">Delivered</td>
+            </tr>
+           
+        </tbody>
+    </table>
+    <div class="footer">Data updated in real-time</div>
+
+    <script>
+        const client = mqtt.connect('ws://test.mosquitto.org:8080'); // WebSocket connection
+        client.on('connect', function () {
+            console.log('Connected to MQTT broker');
+            client.subscribe('smart_meter/room1');
+            client.subscribe('smart_meter/room2');
+            client.subscribe('smart_meter/room3'); // Subscribe to the third appliance
+        });
+
+        // Conversion constants
+        const electricityCostPerKwH = 0.70; // Cost in GHS per kWh
+
+        client.on('message', function (topic, message) {
+            const power = parseFloat(message.toString());
+            const cost = (power / 1000) * electricityCostPerKwH; // Convert Watts to kWh and calculate cost
+
+            if (topic === 'smart_meter/room1') {
+                document.getElementById('room1').innerText = `${power.toFixed(2)} W`;
+                document.getElementById('cost1').innerText = `${cost.toFixed(2)} GHS`;
+            } else if (topic === 'smart_meter/room2') {
+                document.getElementById('room2').innerText = `${power.toFixed(2)} W`;
+                document.getElementById('cost2').innerText = `${cost.toFixed(2)} GHS`;
+            } else if (topic === 'smart_meter/room3') {
+                document.getElementById('room3').innerText = `${power.toFixed(2)} W`;
+                document.getElementById('cost3').innerText = `${cost.toFixed(2)} GHS`;
+            }
+        });
+    </script>
+</body>
+</html>
